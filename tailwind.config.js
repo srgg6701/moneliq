@@ -18,7 +18,16 @@ const config = {
   darkMode: "class",
   plugins: [
     heroui({
+      defaultTheme: "neutral",
       themes: {
+        neutral: {
+          colors: {
+            primary: {
+              DEFAULT: "#5fbd40ff",
+            },
+            background: "#8e7878ff",
+          },
+        },
         dark: { // member
           colors: {
             primary: {
