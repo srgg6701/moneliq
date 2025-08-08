@@ -6,11 +6,11 @@ export const siteConfig = {
   navItems: [
     {
       label: 'Dashboard',
-      href: '/',
+      href: '/dashboard',
     },
     {
-      label: 'Balancies',
-      href: '/balancies',
+      label: 'Balances',
+      href: '/balances',
     },
     {
       label: 'Currencies',
