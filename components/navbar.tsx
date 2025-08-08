@@ -3,7 +3,6 @@ import {
   NavbarContent,
   NavbarMenu,
   NavbarMenuToggle,
-  NavbarBrand,
   NavbarItem,
   NavbarMenuItem,
 } from "@heroui/navbar";
@@ -62,6 +61,10 @@ export const Navbar = () => {
         </ul>
         <ThemeSwitch />
         {searchInput}
+      </NavbarContent>
+      <NavbarContent className="basis-1 pl-4 sm:hidden" justify="end">
+        <ThemeSwitch />
+        <NavbarMenuToggle />
       </NavbarContent>
     </HeroUINavbar>
   );
