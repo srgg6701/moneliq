@@ -8,30 +8,15 @@ import useSWR from 'swr'; // SWR for fetching all balances
 import useSWRInfinite from 'swr/infinite'; // SWR for infinite scroll
 import { SWRConfig } from 'swr'; // SWR provider for cache
 import { useInView } from 'react-intersection-observer'; // Hook for intersection observer
+import { endpointCurrencies, endpointBalances } from "@/config/site";
+import type { Currency, Balance, CombinedCurrencyData } from "@/types";
 
-// Interfaces (consider moving to a separate file, e.g., types/data.ts)
-interface Currency {
-  id: string;
-  symbol: string;
-  code: string;
-}
-
-interface Balance {
-  id: string;
-  currency_id: number;
-  amount: string;
-}
-
-interface CombinedCurrencyData {
-  currencyId: string;
-  symbol: string;
-  code: string;
-  amount: string | null;
-}
 
 // --- Component Props ---
 interface BalancesTableProps {
-  debouncedSearchQuery: string; // <-- ADDED: Prop for debounced search query
+  debouncedSearchQuery: string; // Prop for debounced search query
+  sortBy: string; // <-- ADDED: Prop for sort field
+  sortOrder: string; // <-- ADDED: Prop for sort order
 }
 
 // --- Tunables ---
@@ -77,19 +62,11 @@ class LRUCache<K, V> {
 // Generic JSON fetcher for SWR. Uses `cache: 'no-store'` to avoid browser cache.
 const fetchJSON = async <T,>(url: string): Promise<T> => {
   const res = await fetch(url, { cache: 'no-store' });
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText || 'Unknown Error'}`); // <-- CHANGED: Added Unknown Error for statusText
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText || 'Unknown Error'}`);
   return res.json();
 };
-
-// --- MockAPI Endpoints (assuming defined in config/site.ts) ---
-// import { endpointCurrencies, endpointBalances } from "@/config/site";
-// Placeholder if not imported:
-const endpointCurrencies = 'https://653fb0ea9e8bd3be29e10cd4.mockapi.io/api/v1/currencies';
-const endpointBalances = 'https://653fb0ea9e8bd3be29e10cd4.mockapi.io/api/v1/balances';
-
-
 // --- Main BalancesTable component (wrapped in SWRConfig) ---
-export default function BalancesTable({ debouncedSearchQuery }: BalancesTableProps) { // <-- CHANGED: Accept prop
+export default function BalancesTable({ debouncedSearchQuery, sortBy, sortOrder }: BalancesTableProps) { // <-- CHANGED: Accept all props here
   // Local SWR provider using our LRU cache — keeps this self-contained to one file.
   const provider = useMemo(
     () => () => new LRUCache<string, any>(LRU_MAX_ITEMS) as any,
@@ -97,13 +74,13 @@ export default function BalancesTable({ debouncedSearchQuery }: BalancesTablePro
   );
   return (
     <SWRConfig value={{ fetcher: fetchJSON, provider }}>
-      <BalancesTableInner debouncedSearchQuery={debouncedSearchQuery} /> {/* <-- CHANGED: Pass prop */}
+      <BalancesTableInner debouncedSearchQuery={debouncedSearchQuery} sortBy={sortBy} sortOrder={sortOrder} /> {/* <-- CHANGED: Pass all props */}
     </SWRConfig>
   );
 }
 
 // --- Inner component containing the actual logic ---
-function BalancesTableInner({ debouncedSearchQuery }: BalancesTableProps) { // <-- CHANGED: Accept prop
+function BalancesTableInner({ debouncedSearchQuery, sortBy, sortOrder }: BalancesTableProps) { // <-- CHANGED: Accept all props
   const tableRef = useRef<HTMLDivElement>(null);
   const rowHeightRef = useRef<number>(44); // Measured row height (px)
   const autoBumpDone = useRef(false); // Ensure we auto-load only once
@@ -146,10 +123,10 @@ function BalancesTableInner({ debouncedSearchQuery }: BalancesTableProps) { // <
       if (!balances && !balancesError) return null; 
 
       const page = index + 1;
-      // Construct URL with pagination and SEARCH query parameter
-      return `${endpointCurrencies}?page=${page}&limit=${ITEMS_PER_PAGE}${debouncedSearchQuery ? `&search=${debouncedSearchQuery}` : ''}`; // <-- CHANGED: Added search parameter
+      // Construct URL with pagination, SEARCH, and SORTING query parameters
+      return `${endpointCurrencies}?page=${page}&limit=${ITEMS_PER_PAGE}${debouncedSearchQuery ? `&search=${debouncedSearchQuery}` : ''}${sortBy ? `&sortBy=${sortBy}&order=${sortOrder}` : ''}`; // <-- CHANGED: Added search and sort parameters
     },
-    [balances, balancesError, debouncedSearchQuery], // <-- CHANGED: Added debouncedSearchQuery to dependencies
+    [balances, balancesError, debouncedSearchQuery, sortBy, sortOrder], // <-- CHANGED: Added sortBy and sortOrder to dependencies
   );
 
   const {
@@ -225,14 +202,14 @@ function BalancesTableInner({ debouncedSearchQuery }: BalancesTableProps) { // <
     if (!inView) return; // Only load if sentinel is in view
     if (isInitialLoading || isFetchingMore || reachedEnd) return; // Don't load if already loading or no more data
     setSize((s) => s + Math.max(1, PREFETCH_AHEAD)); // Increment page size
-  }, [inView, isInitialLoading, isFetchingMore, reachedEnd, setSize]);
+  }, [inView, isInitialLoading, isFetchingMore, reachedEnd, setSize, debouncedSearchQuery, sortBy, sortOrder]); // <-- CHANGED: Added dependencies for sentinel
 
   // 8) Optional: keep SWR memory in check for very long lists
   useEffect(() => {
     if (!pages) return;
     if (pages.length <= MAX_PAGES_IN_MEMORY) return;
     // Drop the earliest page from cache. This does NOT trigger a refetch.
-    mutate((prev) => (prev ? prev.slice(1) : prev), { revalidate: false }); // <-- CHANGED: { revalidate: false }
+    mutate((prev) => (prev ? prev.slice(1) : prev), { revalidate: false });
   }, [pages, mutate]);
 
   // 9) Error handling display
@@ -270,7 +247,7 @@ function BalancesTableInner({ debouncedSearchQuery }: BalancesTableProps) { // <
   ] as const;
 
   return (
-    <div className="px-4" ref={tableRef}>
+    <div className="mt-4" ref={tableRef}>
       {/* Table Component */}
       <Table aria-label="Available Balances Table">
         <TableHeader>
