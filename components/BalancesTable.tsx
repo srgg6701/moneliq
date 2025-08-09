@@ -1,7 +1,7 @@
-// components/BalancesTable.tsx
 'use client';
 
-import React, { useLayoutEffect, useEffect, useRef, useCallback, useMemo, ReactNode } from 'react';
+import { useLayoutEffect, useEffect, useRef, useCallback, useMemo, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 import { Spinner } from '@heroui/spinner';
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@heroui/table';
 import useSWR from 'swr'; // SWR for fetching all balances
@@ -83,6 +83,7 @@ export default function BalancesTable({ debouncedSearchQuery, sortBy, sortOrder 
 function BalancesTableInner({ debouncedSearchQuery, sortBy, sortOrder }: BalancesTableProps) { // <-- CHANGED: Accept all props
   const tableRef = useRef<HTMLDivElement>(null);
   const rowHeightRef = useRef<number>(44); // Measured row height (px)
+  const router = useRouter();
   const autoBumpDone = useRef(false); // Ensure we auto-load only once
 
   // 1) Fetch all balances once; SWR caches them for us.
@@ -257,7 +258,10 @@ function BalancesTableInner({ debouncedSearchQuery, sortBy, sortOrder }: Balance
         </TableHeader>
         <TableBody>
           {flatData.map((item) => (
-            <TableRow key={item.currencyId}>
+            <TableRow 
+              key={item.currencyId}
+              onClick={() => router.push(`/currencies/${item.currencyId}`)}
+              className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
               {(columnKey) => (
                 <TableCell>
                   {columnKey === "amount"
