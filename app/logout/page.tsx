@@ -1,16 +1,18 @@
 'use client';
-
 import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@heroui/button';
 
 import { useUserStore } from '@/lib/store/userStore';
+//import { useTheme } from "next-themes";
 
 export default function LogoutPage() {
   const logoutUser = useUserStore((state) => state.logout);
+  //const { setTheme } = useTheme();
 
   useEffect(() => {
     logoutUser();
+    //setTheme("dark");
   }, [logoutUser]);
 
   return (

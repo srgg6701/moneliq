@@ -1,21 +1,41 @@
 "use client";
 
+import { FC, useCallback } from "react";
 import { VisuallyHidden } from "@react-aria/visually-hidden";
-import { useSwitch } from "@heroui/switch";
-import clsx from "clsx";
-import { SunFilledIcon, MoonFilledIcon } from "@/components/icons";
+import { SwitchProps, useSwitch } from "@heroui/switch";
 import { useTheme } from "next-themes";
+import { useIsSSR } from "@react-aria/ssr";
+import clsx from "clsx";
 
-export const ThemeSwitch = () => {
+import { SunFilledIcon, MoonFilledIcon } from "@/components/icons";
+import { useUserStore } from "@/lib/store/userStore";
+
+export interface ThemeSwitchProps {
+  className?: string;
+  classNames?: SwitchProps["classNames"];
+}
+
+export const ThemeSwitch: FC<ThemeSwitchProps> = ({
+  className,
+  classNames,
+}) => {
   const { theme, setTheme } = useTheme();
+  const isSSR = useIsSSR();
+  const { userType } = useUserStore();
 
-  const toggleTheme = () => {
-    if (theme === "light") {
-      setTheme("dark");
-    } else {
-      setTheme("light");
+  const onChange = useCallback(() => {
+    let newTheme = "";
+
+    if (!userType) {
+      newTheme = theme === "light" ? "dark" : "light";
+    } else if (userType === "member") {
+      newTheme = theme === "memberLight" ? "memberDark" : "memberLight";
+    } else if (userType === "partner") {
+      newTheme = theme === "partnerLight" ? "partnerDark" : "partnerLight";
     }
-  };
+
+    if (newTheme) setTheme(newTheme);
+  }, [theme, setTheme, userType]);
 
   const {
     Component,
@@ -25,16 +45,22 @@ export const ThemeSwitch = () => {
     getInputProps,
     getWrapperProps,
   } = useSwitch({
-    isSelected: theme === "light",
+    isSelected:
+      (!userType && theme === "light") ||
+      (userType === "member" && theme === "memberLight") ||
+      (userType === "partner" && theme === "partnerLight") ||
+      isSSR,
     "aria-label": "Toggle theme",
-    onChange: toggleTheme,
+    onChange,
   });
 
   return (
     <Component
       {...getBaseProps({
         className: clsx(
-          "px-px transition-opacity hover:opacity-80 cursor-pointer"
+          "px-px transition-opacity hover:opacity-80 cursor-pointer",
+          className,
+          classNames?.base
         ),
       })}
     >
@@ -56,10 +82,15 @@ export const ThemeSwitch = () => {
               "px-0",
               "mx-0",
             ],
+            classNames?.wrapper
           ),
         })}
       >
-        {!isSelected ? <SunFilledIcon size={22} /> : <MoonFilledIcon size={22} />}
+        {!isSelected || isSSR ? (
+          <SunFilledIcon size={22} />
+        ) : (
+          <MoonFilledIcon size={22} />
+        )}
       </div>
     </Component>
   );

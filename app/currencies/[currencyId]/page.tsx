@@ -1,18 +1,16 @@
 import type { Currency, Balance, CombinedCurrencyData } from '@/types';
 
-import { notFound } from 'next/navigation'; // For displaying 404 page if currency not found
+import { notFound } from 'next/navigation';
 
 import { endpointCurrencies, endpointBalances } from '@/config/site';
 
-// Function to fetch details for a specific currency
 async function getCurrencyDetails(id: string): Promise<CombinedCurrencyData | null> {
   try {
-    // Fetch currency details
     const numericId = Number(id);
     const currencyRes = await fetch(`${endpointCurrencies}${numericId}`, { cache: 'no-store' });
 
     if (!currencyRes.ok) {
-      if (currencyRes.status === 404) return null; // Currency not found
+      if (currencyRes.status === 404) return null;
       throw new Error(
         `Failed to fetch currency details: ${currencyRes.statusText || 'Unknown Error'}`,
       );
@@ -34,7 +32,6 @@ async function getCurrencyDetails(id: string): Promise<CombinedCurrencyData | nu
       code: currency.code,
       amount: matchingBalance?.amount || null,
       // Add other details if available from currency object
-      // name: currency.name,
     };
   } catch (error) {
     console.error(`Error fetching details for currency ${id}:`, error);
@@ -50,7 +47,6 @@ export default async function CurrencyDetailPage({ params }: { params: { currenc
   // Fetch details on the server
   const currencyDetails = await getCurrencyDetails(currencyId);
 
-  // If currency not found, render Next.js 404 page
   if (!currencyDetails) {
     notFound();
   }
@@ -74,7 +70,6 @@ export default async function CurrencyDetailPage({ params }: { params: { currenc
             (This balance is from the global balances list)
           </p>
         </div>
-        {/* Add more details here if available from the API or other sources */}
       </div>
     </div>
   );

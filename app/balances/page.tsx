@@ -1,29 +1,25 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 import { Kbd } from '@heroui/kbd';
 import { Input } from '@heroui/input';
-// <-- CHANGED: Import Select and SelectItem from @heroui/select
 import { Select, SelectItem } from '@heroui/select';
 
 import BalancesTable from '@/components/BalancesTable';
 import { SearchIcon } from '@/components/icons';
 
-// --- Компонент страницы Balances ---
 export default function Balances() {
-  // State for search functionality
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
 
-  // State for sorting functionality <-- ADDED: useState for sortBy and sortOrder
-  const [sortBy, setSortBy] = useState('symbol'); // Default sort by 'symbol'
-  const [sortOrder, setSortOrder] = useState('asc'); // Default sort order 'asc'
+  // State for sorting functionality
+  const [sortBy, setSortBy] = useState('symbol');
+  const [sortOrder, setSortOrder] = useState('asc');
 
   // Debounce effect for search query (runs after 500ms of no input)
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchQuery(searchQuery);
-    }, 500); // 500ms delay
+    }, 500);
 
     return () => {
       clearTimeout(handler); // Clear timeout if search query changes before delay
@@ -73,14 +69,12 @@ export default function Balances() {
 
   return (
     <div className="px-4">
-      {/* Container for title, search, and sort controls */}
       <div className="mb-4 flex flex-col justify-between gap-3 md:mb-0 md:flex-row md:items-end">
         <h1 className="inline-block text-3xl font-bold">Your Balances</h1>
         <div className="flex w-full max-w-[40rem] gap-3 md:w-auto">
           <div className="flex-grow">{searchInput}</div>
         </div>
         <div className="flex gap-4">
-          {/* Select component for "Sort By" field */}
           <Select
             className="min-w-[120px]"
             label="Sort By"
@@ -93,13 +87,10 @@ export default function Balances() {
               if (selectedKey) setSortBy(selectedKey);
             }}
           >
-            {/* Render items from sortOptions array */}
             {sortOptions.map((option) => (
               <SelectItem key={option.key}>{option.label}</SelectItem>
             ))}
           </Select>
-
-          {/* Select component for "Order" (ASC/DESC) */}
           <Select
             className="min-w-[100px]"
             label="Order"
@@ -111,7 +102,6 @@ export default function Balances() {
               if (selectedKey) setSortOrder(selectedKey);
             }}
           >
-            {/* Render items from orderOptions array */}
             {orderOptions.map((option) => (
               <SelectItem key={option.key}>{option.label}</SelectItem>
             ))}
@@ -119,7 +109,6 @@ export default function Balances() {
         </div>
       </div>
 
-      {/* BalancesTable component receives search and sort props */}
       <BalancesTable
         debouncedSearchQuery={debouncedSearchQuery}
         sortBy={sortBy}

@@ -12,21 +12,19 @@ import { endpointCurrencies, endpointBalances } from "@/config/site";
 import type { Currency, Balance, CombinedCurrencyData } from "@/types";
 
 
-// --- Component Props ---
 interface BalancesTableProps {
   debouncedSearchQuery: string; // Prop for debounced search query
-  sortBy: string; // <-- ADDED: Prop for sort field
-  sortOrder: string; // <-- ADDED: Prop for sort order
+  sortBy: string;
+  sortOrder: string;
 }
 
-// --- Tunables ---
 const ITEMS_PER_PAGE = 10;
 const IO_ROOT_MARGIN = '200px'; // Load when 200px from the bottom
 const PREFETCH_AHEAD = 1; // How many pages to request ahead (bump size)
 const LRU_MAX_ITEMS = 500; // Limit SWR cache entries
 const MAX_PAGES_IN_MEMORY = 20; // Limit pages in SWR state for very long lists
 
-// --- Tiny LRU for SWR cache provider ---
+// --- Tiny Least Recently Used for SWR cache provider ---
 // Minimal LRU map for SWR's provider to prevent unbounded memory growth.
 class LRUCache<K, V> {
   private map = new Map<K, V>();
@@ -66,7 +64,7 @@ const fetchJSON = async <T,>(url: string): Promise<T> => {
   return res.json();
 };
 // --- Main BalancesTable component (wrapped in SWRConfig) ---
-export default function BalancesTable({ debouncedSearchQuery, sortBy, sortOrder }: BalancesTableProps) { // <-- CHANGED: Accept all props here
+export default function BalancesTable({ debouncedSearchQuery, sortBy, sortOrder }: BalancesTableProps) {
   // Local SWR provider using our LRU cache — keeps this self-contained to one file.
   const provider = useMemo(
     () => () => new LRUCache<string, any>(LRU_MAX_ITEMS) as any,
@@ -74,13 +72,13 @@ export default function BalancesTable({ debouncedSearchQuery, sortBy, sortOrder 
   );
   return (
     <SWRConfig value={{ fetcher: fetchJSON, provider }}>
-      <BalancesTableInner debouncedSearchQuery={debouncedSearchQuery} sortBy={sortBy} sortOrder={sortOrder} /> {/* <-- CHANGED: Pass all props */}
+      <BalancesTableInner debouncedSearchQuery={debouncedSearchQuery} sortBy={sortBy} sortOrder={sortOrder} />
     </SWRConfig>
   );
 }
 
 // --- Inner component containing the actual logic ---
-function BalancesTableInner({ debouncedSearchQuery, sortBy, sortOrder }: BalancesTableProps) { // <-- CHANGED: Accept all props
+function BalancesTableInner({ debouncedSearchQuery, sortBy, sortOrder }: BalancesTableProps) {
   const tableRef = useRef<HTMLDivElement>(null);
   const rowHeightRef = useRef<number>(44); // Measured row height (px)
   const router = useRouter();
@@ -125,14 +123,13 @@ function BalancesTableInner({ debouncedSearchQuery, sortBy, sortOrder }: Balance
 
       const page = index + 1;
       // Construct URL with pagination, SEARCH, and SORTING query parameters
-      return `${endpointCurrencies}?page=${page}&limit=${ITEMS_PER_PAGE}${debouncedSearchQuery ? `&search=${debouncedSearchQuery}` : ''}${sortBy ? `&sortBy=${sortBy}&order=${sortOrder}` : ''}`; // <-- CHANGED: Added search and sort parameters
+      return `${endpointCurrencies}?page=${page}&limit=${ITEMS_PER_PAGE}${debouncedSearchQuery ? `&search=${debouncedSearchQuery}` : ''}${sortBy ? `&sortBy=${sortBy}&order=${sortOrder}` : ''}`;
     },
-    [balances, balancesError, debouncedSearchQuery, sortBy, sortOrder], // <-- CHANGED: Added sortBy and sortOrder to dependencies
+    [balances, balancesError, debouncedSearchQuery, sortBy, sortOrder],
   );
 
   const {
     data: pages, // Array of arrays: [[page1], [page2], ...]
-    size, // Current number of pages being fetched
     setSize, // Function to update number of pages
     isValidating, // True if a fetch is in progress
     error: pagesError, // Error from infinite fetch
@@ -276,7 +273,6 @@ function BalancesTableInner({ debouncedSearchQuery, sortBy, sortOrder }: Balance
         </TableBody>
       </Table>
 
-      {/* Sentinel observed by useInView. When it becomes visible, we load the next page(s). */}
       <div ref={inViewRef} style={{ height: 20, margin: "20px 0" }}>
         {isFetchingMore && (
           <div className="flex justify-center items-center">

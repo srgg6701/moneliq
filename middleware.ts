@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Define a list of protected routes
 const protectedRoutes = ['/dashboard', '/currencies', '/balances']; // /currencies покроет и /currencies/[currencyId]
 
 export function middleware(request: NextRequest) {
@@ -14,7 +13,6 @@ export function middleware(request: NextRequest) {
   console.log('Is protected route:', isProtectedRoute); 
   // Get authentication state from cookie or sessionStorage (via cookie for Middleware)
   // Middleware doesn't have direct access to sessionStorage, so we'll need cookie.
-  // temporal solution
   const isAuthenticated = request.cookies.get('isAuthenticated')?.value === 'true';
   console.log('Is authenticated (from cookie):', isAuthenticated);
 

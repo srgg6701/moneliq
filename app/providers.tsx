@@ -1,4 +1,3 @@
-// app/providers.tsx
 'use client';
 
 import type { ThemeProviderProps } from 'next-themes';
@@ -25,12 +24,11 @@ export function Providers({ children, themeProps }: ProvidersProps) {
   const router = useRouter();
   const initializeUser = useUserStore((state) => state.initializeUser);
 
-  // --- ADDED: State to track if component has mounted on client ---
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
     setMounted(true); // Set mounted to true after initial client-side render
-    initializeUser(); // <-- Call initializeUser here after mount
+    initializeUser();
   }, [initializeUser]);
 
   // Only render children after component has mounted on the client
@@ -38,7 +36,7 @@ export function Providers({ children, themeProps }: ProvidersProps) {
   // While `next-themes` and Zustand might handle some of this internally,
   // this is a robust fallback for hydration issues.
   if (!mounted) {
-    return null; // You could return a simple loading spinner here if preferred, e.g., <Spinner />
+    return null;
   }
 
   return (
