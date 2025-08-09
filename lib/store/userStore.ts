@@ -20,6 +20,7 @@ export const useUserStore = create<UserState>((set) => ({
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('isAuthenticated', 'true');
       sessionStorage.setItem('userType', userType);
+      sessionStorage.setItem('prevUserType', userType);
       sessionStorage.setItem('email', email);
       // Also save in cookies for Middleware
       Cookies.set('isAuthenticated', 'true', { expires: 1, secure: process.env.NODE_ENV === 'production' }); // Кука на 1 день
@@ -33,7 +34,7 @@ export const useUserStore = create<UserState>((set) => ({
       sessionStorage.removeItem('isAuthenticated');
       sessionStorage.removeItem('userType');
       sessionStorage.removeItem('email');
-      
+      sessionStorage.removeItem('prevUserType');
       Cookies.remove('isAuthenticated');
       Cookies.remove('userType');
     }

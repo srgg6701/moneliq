@@ -18,32 +18,43 @@ const config = {
   darkMode: "class",
   plugins: [
     heroui({
-      defaultTheme: "neutral",
       themes: {
-        neutral: {
-          colors: {
-            primary: {
-              DEFAULT: "#5fbd40ff",
-            },
-            background: "#8e7878ff",
-          },
-        },
-        dark: { // member
+        memberDark: {
+          extend: "dark",
           colors: {
             primary: {
               DEFAULT: "#2AFC98",
             },
-            background: "#111111",
+            background: "#8e7878ff",
           },
         },
-        light: { // partner
+        memberLight: {
+          extend: "light",
+          colors: {
+            primary: {
+              DEFAULT: "#2AFC98",
+            },
+            background: "#f49393ff",
+          },
+        },
+        partnerDark: {
+          extend: "dark",
           colors: {
             primary: {
               DEFAULT: "#119DA4",
             },
-            background: "#eeeeee",
+            background: "#03663dff",
           },
-        },     
+        },
+        partnerLight: {
+          extend: "light",
+          colors: {
+            primary: {
+              DEFAULT: "#119DA4",
+            },
+            background: "#bdd3caff",
+          },
+        }     
       },
     }),
   ],
