@@ -1,36 +1,18 @@
+import type { Currency, Balance, CombinedCurrencyData } from '@/types';
+
 import { cookies } from 'next/headers';
 import { Link } from '@heroui/link';
 
-interface Currency {
-  id: string;
-  symbol: string;
-  code: string;
-}
-
-interface Balance {
-  id: string;
-  currency_id: number;
-  amount: string;
-}
-
-interface CombinedCurrencyData {
-  currencyId: string;
-  symbol: string;
-  code: string;
-  amount: string | null;
-}
+import { endpointCurrencies, endpointBalances } from '@/config/site';
 
 async function getTopBalancesForDashboard(): Promise<CombinedCurrencyData[]> {
   try {
-    const currenciesRes = await fetch(
-      'https://653fb0ea9e8bd3be29e10cd4.mockapi.io/api/v1/currencies',
-      { cache: 'no-store' },
-    );
+    const currenciesRes = await fetch(endpointCurrencies, { cache: 'no-store' });
 
     if (!currenciesRes.ok) throw new Error('Failed to fetch currencies');
     const currencies: Currency[] = await currenciesRes.json();
 
-    const balancesRes = await fetch('https://653fb0ea9e8bd3be29e10cd4.mockapi.io/api/v1/balances', {
+    const balancesRes = await fetch(endpointBalances, {
       cache: 'no-store',
     });
 
