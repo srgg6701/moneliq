@@ -28,6 +28,8 @@ export default function BalancesTable() {
   const [data, setData] = useState<CombinedCurrencyData[]>([]);
   const [allBalances, setAllBalances] = useState<Balance[]>([]);
   const [error, setError] = useState<string | null>(null);
+
+  // isLoading — only for the first list load
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -35,127 +37,136 @@ export default function BalancesTable() {
 
   const observerTarget = useRef<HTMLDivElement>(null);
 
+  // 1) Pull all balances (one time)
   useEffect(() => {
+    let isMounted = true;
+
     async function fetchAllBalances() {
       try {
-        const balancesRes = await fetch(`https://653fb0ea9e8bd3be29e10cd4.mockapi.io/api/v1/balances`, { cache: 'no-store' });
-        if (!balancesRes.ok) throw new Error('Failed to fetch all balances');
-        const balances: Balance[] = await balancesRes.json();
-        setAllBalances(balances);
-        setIsLoading(false);
-        //console.log('balances', balances);
+        const res = await fetch(
+          `https://653fb0ea9e8bd3be29e10cd4.mockapi.io/api/v1/balances`,
+          { cache: 'no-store' }
+        );
+        if (!res.ok) throw new Error('Failed to fetch all balances');
+        const balances: Balance[] = await res.json();
+        if (isMounted) setAllBalances(balances);
       } catch (err) {
-        if (err instanceof Error) {
-          setError(`Failed to load all balances: ${err.message}`);
-        } else {
-          setError('An unknown error occurred while fetching all balances');
+        if (isMounted) {
+          setError(
+            err instanceof Error
+              ? `Failed to load all balances: ${err.message}`
+              : 'An unknown error occurred while fetching all balances'
+          );
+          setHasMore(false);
         }
-        setHasMore(false);
       }
     }
+
     fetchAllBalances();
+    return () => { isMounted = false; };
   }, []);
 
-  const fetchData = useCallback(async (page: number, limit: number) => {
-    console.log('fetchData', {page, limit});
-    
-    if (error || allBalances.length === 0 && page === 1) return;
-    console.log('passed');
-    if (page === 1) {
-      setIsLoading(true);
-      setData([]);
-    } else {
-      setIsFetchingMore(true);
-    }
-    setError(null);
+  // 2) We pull currencies in a paginated manner and glue them with balances
+  const fetchData = useCallback(
+    async (page: number, limit: number) => {
+      if (error) return;
+      if (allBalances.length === 0) return;
 
-    try {
-      
-      const currenciesRes = await fetch(`https://653fb0ea9e8bd3be29e10cd4.mockapi.io/api/v1/currencies?page=${page}&limit=${limit}`, { cache: 'no-store' });
-      //console.log('currenciesRes', currenciesRes);
-      if (!currenciesRes.ok) throw new Error('Failed to fetch currencies');
-      const currencies: Currency[] = await currenciesRes.json();
-      /*********************************************************/
-      console.log('currencies', {isLoading, page, limit, currencies});
+      try {
+        if (page > 1) setIsFetchingMore(true);
 
-      if (currencies.length === 0 && page > 1) { 
-         setHasMore(false);
-         return; 
-      }
+        const currenciesRes = await fetch(
+          `https://653fb0ea9e8bd3be29e10cd4.mockapi.io/api/v1/currencies?page=${page}&limit=${limit}`,
+          { cache: 'no-store' }
+        );
+        if (!currenciesRes.ok) throw new Error('Failed to fetch currencies');
 
-      const combinedData: CombinedCurrencyData[] = currencies.map(currency => {
-        const matchingBalance = allBalances.find(b => String(b.currency_id) === currency.id && b.amount);
-        return {
-          currencyId: currency.id,
-          symbol: currency.symbol,
-          code: currency.code,
-          amount: matchingBalance?.amount || null,
-        };
-      });
+        const currencies: Currency[] = await currenciesRes.json();
 
-      if (currencies.length < limit) { 
-        setHasMore(false);
-      }
+        if (currencies.length === 0 && page > 1) {
+          setHasMore(false);
+          return;
+        }
 
-      setData(prevData => {
-        const newData = combinedData.filter(newItem => !prevData.some(existingItem => existingItem.currencyId === newItem.currencyId));
-        return [...prevData, ...newData];
-      });
+        const combinedData: CombinedCurrencyData[] = currencies.map((currency) => {
+          const b = allBalances.find(
+            (x) => String(x.currency_id) === currency.id && x.amount
+          );
+          return {
+            currencyId: currency.id,
+            symbol: currency.symbol,
+            code: currency.code,
+            amount: b?.amount || null,
+          };
+        });
 
-    } catch (err) {
-      if (err instanceof Error) {
-        
-        if (err.message.includes('404')) {
+        if (currencies.length < limit) setHasMore(false);
+
+        setData((prev) => {
+          const newItems = combinedData.filter(
+            (n) => !prev.some((p) => p.currencyId === n.currencyId)
+          );
+          return page === 1 ? newItems : [...prev, ...newItems];
+        });
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : 'An unknown error occurred';
+        if (msg.includes('404')) {
           setHasMore(false);
           setError(null);
           return;
         }
-        setError(err.message);
-      } else {
-        setError('An unknown error occurred');
+        setError(msg);
+        setHasMore(false);
+      } finally {
+        if (page === 1) setIsLoading(false);
+        setIsFetchingMore(false);
       }
-      setHasMore(false);
-    } finally {
-      setIsLoading(false);
-      setIsFetchingMore(false);
-    }
-  }, [allBalances, error]);
+    },
+    [allBalances, error]
+  );
 
+  // 3) First listing - when balances are ready
   useEffect(() => {
-    console.log('useEffect', {allBalances, currentPage, data, isLoading});
-    if (allBalances.length > 0 && !isLoading) {
+    if (allBalances.length > 0 && currentPage === 1 && isLoading) {
+      fetchData(1, ITEMS_PER_PAGE);
+    }
+  }, [allBalances.length, currentPage, isLoading, fetchData]);
+
+  // 4) Subsequent pages - just by currentPage
+  useEffect(() => {
+    if (
+      allBalances.length > 0 &&
+      currentPage > 1 &&
+      !isFetchingMore &&
+      hasMore
+    ) {
       fetchData(currentPage, ITEMS_PER_PAGE);
     }
-    
-  }, [allBalances, currentPage, data.length, isLoading, fetchData]);
+  }, [currentPage, allBalances.length, hasMore, isFetchingMore, fetchData]);
 
+  // 5) IntersectionObserver for infinite scrolling
   useEffect(() => {
     if (!hasMore || isLoading || isFetchingMore) return;
 
-    const observer = new IntersectionObserver((entries: IntersectionObserverEntry[]) => {
-      if (entries[0].isIntersecting && hasMore && !isLoading && !isFetchingMore) {
-        setCurrentPage(prevPage => prevPage + 1);
-      }
-    }, {
-      rootMargin: '200px',
-    });
+    const observer = new IntersectionObserver(
+      (entries: IntersectionObserverEntry[]) => {
+        if (entries[0].isIntersecting && hasMore && !isLoading && !isFetchingMore) {
+          setCurrentPage((p) => p + 1);
+        }
+      },
+      { rootMargin: '200px' }
+    );
 
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current);
-    }
-
-    return () => {
-      if (observerTarget.current) {
-        observer.unobserve(observerTarget.current);
-      }
-    };
+    const el = observerTarget.current;
+    if (el) observer.observe(el);
+    return () => { if (el) observer.unobserve(el); };
   }, [hasMore, isLoading, isFetchingMore]);
 
   const columns = [
     { key: 'symbol', label: 'Currency' },
     { key: 'code', label: 'Code' },
     { key: 'amount', label: 'Balance' },
-  ];
+  ] as const;
 
   if (error) {
     return <p className="text-red-500 text-center">Error: {error}</p>;
@@ -176,7 +187,6 @@ export default function BalancesTable() {
 
   return (
     <div className="p-4">
-      
       <Table aria-label="Available Balances Table">
         <TableHeader>
           {columns.map((column) => (
@@ -185,14 +195,12 @@ export default function BalancesTable() {
         </TableHeader>
         <TableBody>
           {data.map((item) => (
-            <TableRow
-              key={item.currencyId}
-              
-              // onClick={() => router.push(`/currencies/${item.currencyId}`)}
-            >
+            <TableRow key={item.currencyId}>
               {(columnKey) => (
                 <TableCell>
-                  {columnKey === 'amount' ? (item.amount || 'N/A') : item[columnKey as keyof CombinedCurrencyData]}
+                  {columnKey === 'amount'
+                    ? (item.amount || 'N/A')
+                    : (item[columnKey as keyof CombinedCurrencyData] as React.ReactNode)}
                 </TableCell>
               )}
             </TableRow>
@@ -208,7 +216,9 @@ export default function BalancesTable() {
           </div>
         )}
         {!hasMore && data.length > 0 && !isFetchingMore && (
-          <p className="text-center text-gray-500 dark:text-gray-400">You've reached the end of the list.</p>
+          <p className="text-center text-gray-500 dark:text-gray-400">
+            You've reached the end of the list.
+          </p>
         )}
         {data.length === 0 && !hasMore && !error && !isLoading && (
           <p className="text-center text-gray-500 dark:text-gray-400">No balances found.</p>
