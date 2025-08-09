@@ -15,11 +15,6 @@ export const siteConfig = {
       protected: true,
     },
     {
-      label: 'Currencies',
-      href: '/currencies',
-      protected: true,
-    },
-    {
       label: 'Logout',
       href: '/logout',
       protected: true,
