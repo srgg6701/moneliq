@@ -75,7 +75,7 @@ export const Navbar = () => {
     <HeroUINavbar maxWidth="xl" position="sticky">
       <NavbarContent className="basis-1/5 sm:basis-full" justify="center">
         <div className="hidden gap-[10%] lg:flex w-full">
-          <ul className="gap-4 flex items-center">{menuList()}</ul>
+          <ul className="px-4 gap-4 flex items-center">{menuList()}</ul>
           {isAuthenticated && searchInput}
           <ThemeSwitch />
         </div>

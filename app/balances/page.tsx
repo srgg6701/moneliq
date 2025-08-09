@@ -1,7 +1,7 @@
 export default function balances() {
   return (
     <>
-      <h1>balances</h1>
+      <h1>Balances</h1>
     </>
   );
 }
