@@ -52,7 +52,7 @@ export default async function DashboardPage() {
   const topBalances = await getTopBalancesForDashboard();
 
   return (
-    <div className="p-4">
+    <div className="px-4">
       <h1>Dashboard</h1>
       <p className="mb-8 text-lg text-gray-700 dark:text-gray-300">
         Welcome, You are logged in as a <span className="font-semibold capitalize">{userType}</span>
