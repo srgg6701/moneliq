@@ -4,6 +4,12 @@ import { notFound } from 'next/navigation';
 
 import { endpointCurrencies, endpointBalances } from '@/config/site';
 
+type PageProps = {
+  params: {
+    currencyId: string;
+  };
+};
+
 async function getCurrencyDetails(id: string): Promise<CombinedCurrencyData | null> {
   try {
     const numericId = Number(id);
@@ -41,8 +47,8 @@ async function getCurrencyDetails(id: string): Promise<CombinedCurrencyData | nu
 }
 
 // Dynamic Page Component
-export default async function CurrencyDetailPage({ params }: { params: { currencyId: string } }) {
-  const { currencyId } = await params;
+export default async function CurrencyDetailPage({ params }: PageProps) {
+  const { currencyId } = params;
 
   // Fetch details on the server
   const currencyDetails = await getCurrencyDetails(currencyId);
