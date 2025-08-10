@@ -1,60 +1,50 @@
-"use client";
-import { FC, useCallback } from "react";
-import { VisuallyHidden } from "@react-aria/visually-hidden";
-import { SwitchProps, useSwitch } from "@heroui/switch";
-import { useTheme } from "next-themes";
-import { useIsSSR } from "@react-aria/ssr";
-import clsx from "clsx";
+'use client';
+import { FC, useCallback } from 'react';
+import { VisuallyHidden } from '@react-aria/visually-hidden';
+import { SwitchProps, useSwitch } from '@heroui/switch';
+import { useTheme } from 'next-themes';
+import { useIsSSR } from '@react-aria/ssr';
+import clsx from 'clsx';
 
-import { SunFilledIcon, MoonFilledIcon } from "@/components/icons";
-import { useUserStore } from "@/lib/store/userStore";
+import { SunFilledIcon, MoonFilledIcon } from '@/components/icons';
+import { useUserStore } from '@/lib/store/userStore';
 
 export interface ThemeSwitchProps {
   className?: string;
-  classNames?: SwitchProps["classNames"];
+  classNames?: SwitchProps['classNames'];
 }
 
-export const ThemeSwitch: FC<ThemeSwitchProps> = ({
-  className,
-  classNames,
-}) => {
+export const ThemeSwitch: FC<ThemeSwitchProps> = ({ className, classNames }) => {
   const { theme, setTheme } = useTheme();
   const isSSR = useIsSSR();
   const { userType } = useUserStore();
 
   const onChange = useCallback(() => {
-    let newTheme = "";
+    let newTheme = '';
 
     if (!userType) {
-      newTheme = theme === "light" ? "dark" : "light";
-    } else if (userType === "member") {
-      newTheme = theme === "memberLight" ? "memberDark" : "memberLight";
-    } else if (userType === "partner") {
-      newTheme = theme === "partnerLight" ? "partnerDark" : "partnerLight";
+      newTheme = theme === 'light' ? 'dark' : 'light';
+    } else if (userType === 'member') {
+      newTheme = theme === 'memberLight' ? 'memberDark' : 'memberLight';
+    } else if (userType === 'partner') {
+      newTheme = theme === 'partnerLight' ? 'partnerDark' : 'partnerLight';
     }
 
     if (newTheme) setTheme(newTheme);
   }, [theme, setTheme, userType]);
 
-  const {
-    Component,
-    slots,
-    isSelected,
-    getBaseProps,
-    getInputProps,
-    getWrapperProps,
-  } = useSwitch({
+  const { Component, slots, isSelected, getBaseProps, getInputProps, getWrapperProps } = useSwitch({
     isSelected:
-      (!userType && theme === "light") ||
-      (userType === "member" && theme === "memberLight") ||
-      (userType === "partner" && theme === "partnerLight") ||
+      (!userType && theme === 'light') ||
+      (userType === 'member' && theme === 'memberLight') ||
+      (userType === 'partner' && theme === 'partnerLight') ||
       isSSR,
-    "aria-label": "Toggle theme",
+    'aria-label': 'Toggle theme',
     onChange,
   });
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === " " || e.key === "Enter") {
+    if (e.key === ' ' || e.key === 'Enter') {
       e.preventDefault();
       onChange();
     }
@@ -64,17 +54,17 @@ export const ThemeSwitch: FC<ThemeSwitchProps> = ({
     <Component
       {...getBaseProps({
         className: clsx(
-          "px-px transition-opacity hover:opacity-80 cursor-pointer",
+          'px-px transition-opacity hover:opacity-80 cursor-pointer',
           className,
           classNames?.base,
         ),
-        role: "switch",
-        "aria-checked": isSelected,
+        role: 'switch',
+        'aria-checked': isSelected,
         tabIndex: 0,
         onKeyDown: handleKeyDown,
       })}
     >
-      <div className="flex mr-2">Theme</div>
+      <div className="mr-2 flex">Theme</div>
       <VisuallyHidden>
         <input {...getInputProps({ tabIndex: -1 })} />
       </VisuallyHidden>
@@ -83,25 +73,21 @@ export const ThemeSwitch: FC<ThemeSwitchProps> = ({
         className={slots.wrapper({
           class: clsx(
             [
-              "h-auto w-auto",
-              "bg-transparent",
-              "rounded-lg",
-              "flex items-center justify-center",
-              "group-data-[selected=true]:bg-transparent",
-              "!text-default-500",
-              "pt-px",
-              "px-0",
-              "mx-0",
+              'h-auto w-auto',
+              'bg-transparent',
+              'rounded-lg',
+              'flex items-center justify-center',
+              'group-data-[selected=true]:bg-transparent',
+              '!text-default-500',
+              'pt-px',
+              'px-0',
+              'mx-0',
             ],
             classNames?.wrapper,
           ),
         })}
       >
-        {!isSelected || isSSR ? (
-          <SunFilledIcon size={22} />
-        ) : (
-          <MoonFilledIcon size={22} />
-        )}
+        {!isSelected || isSSR ? <SunFilledIcon size={22} /> : <MoonFilledIcon size={22} />}
       </div>
     </Component>
   );

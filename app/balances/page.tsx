@@ -108,7 +108,6 @@ export default function Balances() {
           </Select>
         </div>
       </div>
-
       <BalancesTable
         debouncedSearchQuery={debouncedSearchQuery}
         sortBy={sortBy}

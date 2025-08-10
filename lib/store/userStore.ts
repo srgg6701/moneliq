@@ -50,20 +50,12 @@ export const useUserStore = create<UserState>((set) => ({
 
   initializeUser: () => {
     if (typeof window !== 'undefined') {
-      const isAuthenticatedSession =
-        sessionStorage.getItem('isAuthenticated') === 'true';
-      const userTypeSession = sessionStorage.getItem('userType') as
-        | 'member'
-        | 'partner'
-        | null;
+      const isAuthenticatedSession = sessionStorage.getItem('isAuthenticated') === 'true';
+      const userTypeSession = sessionStorage.getItem('userType') as 'member' | 'partner' | null;
       const emailSession = sessionStorage.getItem('email');
 
-      const isAuthenticatedCookie =
-        Cookies.get('isAuthenticated') === 'true';
-      const userTypeCookie = Cookies.get('userType') as
-        | 'member'
-        | 'partner'
-        | null;
+      const isAuthenticatedCookie = Cookies.get('isAuthenticated') === 'true';
+      const userTypeCookie = Cookies.get('userType') as 'member' | 'partner' | null;
 
       if (isAuthenticatedSession && userTypeSession && emailSession) {
         set({

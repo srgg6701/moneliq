@@ -17,7 +17,6 @@ interface CombinedCurrencyData {
   amount: string | null;
 }
 
-
 export type IconSvgProps = SVGProps<SVGSVGElement> & {
   size?: number;
 };

@@ -22,9 +22,8 @@ export const siteConfig = {
   ],
 };
 
-const endpoint = "https://653fb0ea9e8bd3be29e10cd4.mockapi.io/api/v1/";
+const endpoint = 'https://653fb0ea9e8bd3be29e10cd4.mockapi.io/api/v1/';
 const endpointCurrencies = `${endpoint}currencies/`;
 const endpointBalances = `${endpoint}balances/`;
 
 export { endpointCurrencies, endpointBalances };
-
