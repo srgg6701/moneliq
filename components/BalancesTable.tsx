@@ -244,7 +244,7 @@ function BalancesTableInner({ debouncedSearchQuery, sortBy, sortOrder }: Balance
     debouncedSearchQuery,
     sortBy,
     sortOrder,
-  ]); // <-- CHANGED: Added dependencies for sentinel
+  ]);
 
   const showError = (message: string) => (
     <p className="mt-10 p-4 text-center text-red-500">{String(message)}</p>
@@ -284,7 +284,6 @@ function BalancesTableInner({ debouncedSearchQuery, sortBy, sortOrder }: Balance
 
   return (
     <div ref={tableRef} className="mt-4">
-      {/* Table Component */}
       <Table aria-label="Available Balances Table">
         <TableHeader>
           {columns.map((c) => (

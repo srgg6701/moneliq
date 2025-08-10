@@ -31,7 +31,6 @@ async function getCurrencyDetails(id: string): Promise<CombinedCurrencyData | nu
       symbol: currency.symbol,
       code: currency.code,
       amount: matchingBalance?.amount || null,
-      // Add other details if available from currency object
     };
   } catch (error) {
     console.error(`Error fetching details for currency ${id}:`, error);
