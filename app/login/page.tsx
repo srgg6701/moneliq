@@ -21,6 +21,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Hardcoded credentials for local testing
   const memberEmail = 'member@valid.email';
   const memberPass = 'Member123!';
   const memberOtp = '151588';
@@ -38,32 +39,33 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setIsLoading(true);
 
     if (!email || !password || !otp) {
       setError('Please fill in all fields.');
-      setIsLoading(false);
 
       return;
     }
 
-    let userType: 'member' | 'partner' | null = null;
-    let userEmail: string | null = null;
+    setIsLoading(true);
 
-    if (email === memberEmail && password === memberPass && otp === memberOtp) {
-      userType = 'member';
-      userEmail = email;
-    } else if (email === partnerEmail && password === partnerPass && otp === partnerOtp) {
-      userType = 'partner';
-      userEmail = email;
-    } else {
-      setError('Invalid email, password, or OTP.');
-    }
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, otp }),
+      });
 
-    setIsLoading(false);
+      const data = await res.json();
 
-    if (userType && userEmail) {
-      loginUser(userType, userEmail);
+      if (!res.ok) {
+        setError(data.error || 'Unknown error occurred.');
+      } else {
+        loginUser(data.type, data.email);
+      }
+    } catch (err) {
+      setError('Network error. Please try again later.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
