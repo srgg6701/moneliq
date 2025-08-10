@@ -25,7 +25,6 @@ const config = {
             primary: {
               DEFAULT: "#2AFC98",
             },
-            background: "#8e7878ff",
           },
         },
         memberLight: {
@@ -34,7 +33,6 @@ const config = {
             primary: {
               DEFAULT: "#2AFC98",
             },
-            background: "#f49393ff",
           },
         },
         partnerDark: {
@@ -43,7 +41,6 @@ const config = {
             primary: {
               DEFAULT: "#119DA4",
             },
-            background: "#03663dff",
           },
         },
         partnerLight: {
@@ -52,7 +49,6 @@ const config = {
             primary: {
               DEFAULT: "#119DA4",
             },
-            background: "#bdd3caff",
           },
         }     
       },

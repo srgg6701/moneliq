@@ -10,12 +10,6 @@ export function ThemeAutoSwitch() {
   const { isAuthenticated, userType } = useUserStore();
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      setTheme('dark');
-
-      return;
-    }
-
     if (!userType) return;
 
     const isDark = theme?.toLowerCase().includes('dark');

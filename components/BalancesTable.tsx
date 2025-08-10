@@ -1,16 +1,29 @@
-'use client';
+"use client";
 
-import { useLayoutEffect, useEffect, useRef, useCallback, useMemo, ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
-import { Spinner } from '@heroui/spinner';
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@heroui/table';
-import useSWR from 'swr'; // SWR for fetching all balances
-import useSWRInfinite from 'swr/infinite'; // SWR for infinite scroll
-import { SWRConfig } from 'swr'; // SWR provider for cache
-import { useInView } from 'react-intersection-observer'; // Hook for intersection observer
+import {
+  useLayoutEffect,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+  ReactNode,
+} from "react";
+import { useRouter } from "next/navigation";
+import { Spinner } from "@heroui/spinner";
+import {
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+} from "@heroui/table";
+import useSWR from "swr"; // SWR for fetching all balances
+import useSWRInfinite from "swr/infinite"; // SWR for infinite scroll
+import { SWRConfig } from "swr"; // SWR provider for cache
+import { useInView } from "react-intersection-observer"; // Hook for intersection observer
 import { endpointCurrencies, endpointBalances } from "@/config/site";
 import type { Currency, Balance, CombinedCurrencyData } from "@/types";
-
 
 interface BalancesTableProps {
   debouncedSearchQuery: string; // Prop for debounced search query
@@ -19,7 +32,7 @@ interface BalancesTableProps {
 }
 
 const ITEMS_PER_PAGE = 10;
-const IO_ROOT_MARGIN = '200px'; // Load when 200px from the bottom
+const IO_ROOT_MARGIN = "200px"; // Load when 200px from the bottom
 const PREFETCH_AHEAD = 1; // How many pages to request ahead (bump size)
 const LRU_MAX_ITEMS = 500; // Limit SWR cache entries
 const MAX_PAGES_IN_MEMORY = 20; // Limit pages in SWR state for very long lists
@@ -29,7 +42,9 @@ const MAX_PAGES_IN_MEMORY = 20; // Limit pages in SWR state for very long lists
 class LRUCache<K, V> {
   private map = new Map<K, V>();
   constructor(private max = 500) {}
-  get size() { return this.map.size; }
+  get size() {
+    return this.map.size;
+  }
   get(key: K) {
     const v = this.map.get(key);
     if (v !== undefined) {
@@ -47,24 +62,43 @@ class LRUCache<K, V> {
     }
     return this;
   }
-  has(key: K) { return this.map.has(key); }
-  delete(key: K) { return this.map.delete(key); }
-  clear() { this.map.clear(); }
-  keys() { return this.map.keys(); }
-  values() { return this.map.values(); }
-  entries() { return this.map.entries(); }
-  [Symbol.iterator]() { return this.map[Symbol.iterator](); }
+  has(key: K) {
+    return this.map.has(key);
+  }
+  delete(key: K) {
+    return this.map.delete(key);
+  }
+  clear() {
+    this.map.clear();
+  }
+  keys() {
+    return this.map.keys();
+  }
+  values() {
+    return this.map.values();
+  }
+  entries() {
+    return this.map.entries();
+  }
+  [Symbol.iterator]() {
+    return this.map[Symbol.iterator]();
+  }
 }
 
 // --- Fetcher ---
 // Generic JSON fetcher for SWR. Uses `cache: 'no-store'` to avoid browser cache.
 const fetchJSON = async <T,>(url: string): Promise<T> => {
-  const res = await fetch(url, { cache: 'no-store' });
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText || 'Unknown Error'}`);
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok)
+    throw new Error(`${res.status} ${res.statusText || "Unknown Error"}`);
   return res.json();
 };
 // --- Main BalancesTable component (wrapped in SWRConfig) ---
-export default function BalancesTable({ debouncedSearchQuery, sortBy, sortOrder }: BalancesTableProps) {
+export default function BalancesTable({
+  debouncedSearchQuery,
+  sortBy,
+  sortOrder,
+}: BalancesTableProps) {
   // Local SWR provider using our LRU cache — keeps this self-contained to one file.
   const provider = useMemo(
     () => () => new LRUCache<string, any>(LRU_MAX_ITEMS) as any,
@@ -72,13 +106,21 @@ export default function BalancesTable({ debouncedSearchQuery, sortBy, sortOrder 
   );
   return (
     <SWRConfig value={{ fetcher: fetchJSON, provider }}>
-      <BalancesTableInner debouncedSearchQuery={debouncedSearchQuery} sortBy={sortBy} sortOrder={sortOrder} />
+      <BalancesTableInner
+        debouncedSearchQuery={debouncedSearchQuery}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+      />
     </SWRConfig>
   );
 }
 
 // --- Inner component containing the actual logic ---
-function BalancesTableInner({ debouncedSearchQuery, sortBy, sortOrder }: BalancesTableProps) {
+function BalancesTableInner({
+  debouncedSearchQuery,
+  sortBy,
+  sortOrder,
+}: BalancesTableProps) {
   const tableRef = useRef<HTMLDivElement>(null);
   const rowHeightRef = useRef<number>(44); // Measured row height (px)
   const router = useRouter();
@@ -117,13 +159,13 @@ function BalancesTableInner({ debouncedSearchQuery, sortBy, sortOrder }: Balance
   const getKey = useCallback(
     (index: number, prev: Currency[] | null) => {
       // If previous page was empty, stop
-      if (prev && prev.length === 0) return null; 
+      if (prev && prev.length === 0) return null;
       // Wait until balances are ready (if not, return null, SWR won't fetch)
-      if (!balances && !balancesError) return null; 
+      if (!balances && !balancesError) return null;
 
       const page = index + 1;
       // Construct URL with pagination, SEARCH, and SORTING query parameters
-      return `${endpointCurrencies}?page=${page}&limit=${ITEMS_PER_PAGE}${debouncedSearchQuery ? `&search=${debouncedSearchQuery}` : ''}${sortBy ? `&sortBy=${sortBy}&order=${sortOrder}` : ''}`;
+      return `${endpointCurrencies}?page=${page}&limit=${ITEMS_PER_PAGE}${debouncedSearchQuery ? `&search=${debouncedSearchQuery}` : ""}${sortBy ? `&sortBy=${sortBy}&order=${sortOrder}` : ""}`;
     },
     [balances, balancesError, debouncedSearchQuery, sortBy, sortOrder],
   );
@@ -200,7 +242,16 @@ function BalancesTableInner({ debouncedSearchQuery, sortBy, sortOrder }: Balance
     if (!inView) return; // Only load if sentinel is in view
     if (isInitialLoading || isFetchingMore || reachedEnd) return; // Don't load if already loading or no more data
     setSize((s) => s + Math.max(1, PREFETCH_AHEAD)); // Increment page size
-  }, [inView, isInitialLoading, isFetchingMore, reachedEnd, setSize, debouncedSearchQuery, sortBy, sortOrder]); // <-- CHANGED: Added dependencies for sentinel
+  }, [
+    inView,
+    isInitialLoading,
+    isFetchingMore,
+    reachedEnd,
+    setSize,
+    debouncedSearchQuery,
+    sortBy,
+    sortOrder,
+  ]); // <-- CHANGED: Added dependencies for sentinel
 
   // 8) Optional: keep SWR memory in check for very long lists
   useEffect(() => {
@@ -254,22 +305,36 @@ function BalancesTableInner({ debouncedSearchQuery, sortBy, sortOrder }: Balance
           ))}
         </TableHeader>
         <TableBody>
-          {flatData.map((item) => (
-            <TableRow 
-              key={item.currencyId}
-              onClick={() => router.push(`/currencies/${item.currencyId}`)}
-              className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-              {(columnKey) => (
-                <TableCell>
-                  {columnKey === "amount"
-                    ? item.amount || "N/A"
-                    : (item[
-                        columnKey as keyof CombinedCurrencyData
-                      ] as ReactNode)}
-                </TableCell>
-              )}
-            </TableRow>
-          ))}
+          {flatData.map((item) => {
+            const goNext = () => router.push(`/currencies/${item.currencyId}`);
+            const label = `Open ${item.code} details`;
+            return (
+              <TableRow
+                key={item.currencyId}
+                tabIndex={0}
+                role="link"
+                aria-label={label}
+                onClick={goNext}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    goNext();
+                  }
+                }}
+                className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                {(columnKey) => (
+                  <TableCell>
+                    {columnKey === "amount"
+                      ? item.amount || "N/A"
+                      : (item[
+                          columnKey as keyof CombinedCurrencyData
+                        ] as ReactNode)}
+                  </TableCell>
+                )}
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
 

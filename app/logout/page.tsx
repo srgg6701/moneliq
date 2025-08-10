@@ -4,19 +4,16 @@ import Link from 'next/link';
 import { Button } from '@heroui/button';
 
 import { useUserStore } from '@/lib/store/userStore';
-//import { useTheme } from "next-themes";
 
 export default function LogoutPage() {
   const logoutUser = useUserStore((state) => state.logout);
-  //const { setTheme } = useTheme();
 
   useEffect(() => {
     logoutUser();
-    //setTheme("dark");
   }, [logoutUser]);
 
   return (
-    <div className=".user-form-wrapper">
+    <div className="user-form-wrapper">
       <h1 className="mb-6 text-3xl font-bold text-gray-900 dark:text-gray-100">
         You have been logged out.
       </h1>

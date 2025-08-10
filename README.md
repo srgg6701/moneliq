@@ -1,53 +1,55 @@
-# Next.js & HeroUI Template
+# Moneliq — Frontend (Next.js)
 
-This is a template for creating applications using Next.js 14 (app directory) and HeroUI (v2).
+## Overview
+Small SPA on Next.js (App Router) with authorization, balance/currency table and theming (light/dark + custom `member*/partner*`). Dev-server on Turbopack. Lint/formatting — ESLint + Prettier + Husky. Data loading via fetch/SWR.
 
-[Try it on CodeSandbox](https://githubbox.com/heroui-inc/heroui/next-app-template)
+## Tech Stack
+- Next.js 15, React 18, TypeScript
+- Tailwind CSS 4 + HeroUI (UI components/themes)
+- Zustand (user state), SWR (cache/refetch)
+- next-themes (theme switching)
+- ESLint/Prettier/Husky/lint-staged (code quality)y)
 
-## Technologies Used
+## Prerequisites
+- Node.js 20+ (LTS)
+- pnpm 9+
 
-- [Next.js 14](https://nextjs.org/docs/getting-started)
-- [HeroUI v2](https://heroui.com/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Tailwind Variants](https://tailwind-variants.org)
-- [TypeScript](https://www.typescriptlang.org/)
-- [Framer Motion](https://www.framer.com/motion/)
-- [next-themes](https://github.com/pacocoursey/next-themes)
-
-## How to Use
-
-### Use the template with create-next-app
-
-To create a new project based on this template using `create-next-app`, run the following command:
-
+## Setup
 ```bash
-npx create-next-app -e https://github.com/heroui-inc/next-app-template
+pnpm i
+pnpm dev       # run local dev server (Turbopack)
+pnpm build     # production build
+pnpm start     # run built app
+pnpm lint      # lint + autofixes
 ```
 
-### Install dependencies
+### Env
+If API endpoints are set via config (`app/config/site.ts`), specify them there. For .env (if needed): create `.env.local` and use via `process.env.*`.
 
-You can use one of them `npm`, `yarn`, `pnpm`, `bun`, Example using `npm`:
+## Theming
+Use `next-themes` with `attribute="class"` and an explicit `value` map:
+- `light`, `dark`
+- `memberLight`, `memberDark`
+- `partnerLight`, `partnerDark`
 
-```bash
-npm install
-```
+Switch changes pairs depending on role. On logout theme resets to default (`dark`). (Solution: simple and predictable; avoided `useSyncExternalStore` cycles.)
 
-### Run the development server
+## Data & Error States
+- Loading via `fetch`/SWR with disabled cache for server calls, in UI — skeleton/empty/error.
+- A common thin client (timeout + retry for GET) and a single `ErrorState`/`EmptyState` components are recommended (see the “Architecture & Trade-offs” section).
 
-```bash
-npm run dev
-```
+## Accessibility
+- Semantic landmarks: `<header> / <main id="main"> / <footer>`, `<nav aria-label="Main">`, skip-link `href="#main"`.
+- Table: `table > thead > th[scope="col"]`, rows — `th[scope="row"]` (if applicable).
+- Navigation: `aria-current="page"` on active link.
+- Theme switcher: keyboard accessible (`<input>` by HeroUI), fixed `aria-label`.
 
-### Setup pnpm (optional)
+## Testing (optional)
+- Manual scenarios: list/details loading, API errors, theme switching, login/logout.
+- Vitest/RTL and snapshots for key components can be added if needed.
 
-If you are using `pnpm`, you need to add the following code to your `.npmrc` file:
-
-```bash
-public-hoist-pattern[]=*@heroui/*
-```
-
-After modifying the `.npmrc` file, you need to run `pnpm install` again to ensure that the dependencies are installed correctly.
-
-## License
-
-Licensed under the [MIT license](https://github.com/heroui-inc/next-app-template/blob/main/LICENSE).
+## Architecture & Trade-offs (коротко)
+- **Topics:** simple scheme with `next-themes` and explicit `value`-map was chosen, without third-party effects in the store → less “races” on hydration.
+- **State:** global auth in Zustand; UI-solutions (themes) — in components; separated business events (login/logout) and visual layer.
+- **Loading:** lightweight fetch-client instead of complex abstractions; SWR — for instant UI and revalidate.
+- **A11y:** landmarks/skip-link/`aria-current`; minimal cost of implementation with good return on availability.

@@ -1,5 +1,4 @@
 "use client";
-
 import { FC, useCallback } from "react";
 import { VisuallyHidden } from "@react-aria/visually-hidden";
 import { SwitchProps, useSwitch } from "@heroui/switch";
@@ -54,18 +53,30 @@ export const ThemeSwitch: FC<ThemeSwitchProps> = ({
     onChange,
   });
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === " " || e.key === "Enter") {
+      e.preventDefault();
+      onChange();
+    }
+  };
+
   return (
     <Component
       {...getBaseProps({
         className: clsx(
           "px-px transition-opacity hover:opacity-80 cursor-pointer",
           className,
-          classNames?.base
+          classNames?.base,
         ),
+        role: "switch",
+        "aria-checked": isSelected,
+        tabIndex: 0,
+        onKeyDown: handleKeyDown,
       })}
     >
+      <div className="flex mr-2">Theme</div>
       <VisuallyHidden>
-        <input {...getInputProps()} />
+        <input {...getInputProps({ tabIndex: -1 })} />
       </VisuallyHidden>
       <div
         {...getWrapperProps()}
@@ -82,7 +93,7 @@ export const ThemeSwitch: FC<ThemeSwitchProps> = ({
               "px-0",
               "mx-0",
             ],
-            classNames?.wrapper
+            classNames?.wrapper,
           ),
         })}
       >
