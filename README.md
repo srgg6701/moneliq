@@ -8,7 +8,24 @@ Small SPA on Next.js (App Router) with authorization, balance/currency table and
 - Tailwind CSS 4 + HeroUI (UI components/themes)
 - Zustand (user state), SWR (cache/refetch)
 - next-themes (theme switching)
-- ESLint/Prettier/Husky/lint-staged (code quality)y)
+- ESLint/Prettier/Husky/lint-staged (code quality)
+
+### Note on State Management system 
+
+#### Why Zustand (vs Context / Redux)
+* Low boilerplate, tiny API. A few lines to define a store + actions; fast to reason about for a small app.
+* Performance by default. Selector-based subscription avoids accidental re-renders common with Context.
+* Colocation & ergonomics. Stores live near features; no global reducers/actions ceremony.
+* SSR-friendly usage. We keep the auth store client-only and persist via sessionStorage + cookies for middleware, avoiding hydration traps for theme/auth.
+* TypeScript-friendly. Simple, direct typing of state and actions.
+
+#### Why not Redux (yet)
+* Overhead for the current scope. Redux Toolkit shines in large apps with complex, cross-cutting state; here it would add ceremony without clear benefit.
+* Middleware & devtools not needed now. Our flows are simple (auth login/logout, theme switching). If the app grows (workflows, optimistic updates, complex slices), Redux Toolkit becomes a strong candidate.
+
+#### Why not plain React Context
+* Re-render footprint. Context updates can cascade widely; Zustand’s selectors keep updates scoped.
+* Ergonomics. Derived state/actions and persistence patterns are simpler in Zustand.
 
 ## Prerequisites
 - Node.js 20+ (LTS)
