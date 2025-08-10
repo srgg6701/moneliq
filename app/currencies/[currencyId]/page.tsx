@@ -4,12 +4,6 @@ import { notFound } from 'next/navigation';
 
 import { endpointCurrencies, endpointBalances } from '@/config/site';
 
-type PageProps = {
-  params: {
-    currencyId: string;
-  };
-};
-
 async function getCurrencyDetails(id: string): Promise<CombinedCurrencyData | null> {
   try {
     const numericId = Number(id);
@@ -47,9 +41,13 @@ async function getCurrencyDetails(id: string): Promise<CombinedCurrencyData | nu
 }
 
 // Dynamic Page Component
-export default async function CurrencyDetailPage({ params }: PageProps) {
-  const { currencyId } = params;
-
+export default async function CurrencyDetailPage({
+  params,
+}: {
+  params: Promise<{ currencyId: string }>;
+}) {
+  const resolvedParams = await params;
+  const { currencyId } = resolvedParams;
   // Fetch details on the server
   const currencyDetails = await getCurrencyDetails(currencyId);
 
@@ -69,7 +67,7 @@ export default async function CurrencyDetailPage({ params }: PageProps) {
         </p>
         <div className="mt-4 border-t border-gray-200 pt-4 dark:border-gray-700">
           <p className="text-lg">
-            <span className="text-gray-600 dark:text-gray-400">Balance:</span>{' '}
+            <span className="text-gray-600 dark:text-gray-400">Balance:</span>
             <span className="font-bold">{currencyDetails.amount || 'N/A'}</span>
           </p>
           <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">

@@ -48,7 +48,7 @@ Switch changes pairs depending on role. On logout theme resets to default (`dark
 - Manual scenarios: list/details loading, API errors, theme switching, login/logout.
 - Vitest/RTL and snapshots for key components can be added if needed.
 
-## Architecture & Trade-offs (коротко)
+## Architecture & Trade-offs
 - **Topics:** simple scheme with `next-themes` and explicit `value`-map was chosen, without third-party effects in the store → less “races” on hydration.
 - **State:** global auth in Zustand; UI-solutions (themes) — in components; separated business events (login/logout) and visual layer.
 - **Loading:** lightweight fetch-client instead of complex abstractions; SWR — for instant UI and revalidate.
